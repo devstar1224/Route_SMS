@@ -11,6 +11,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.routesms.R
 import com.routesms.util.SMSReceiver
+import com.routesms.util.slack.SlackWebHook
 import kotlinx.android.synthetic.main.activity_main.*
 
 
@@ -44,7 +45,18 @@ class MainActivity : AppCompatActivity() {
         bindButton.setOnClickListener {
             editor.putString("api_url", mTxtUrl.text.toString())
             editor.apply()
-            Toast.makeText(this, "save!", LENGTH_LONG).show()
+            Toast.makeText(this, "저장완료!", LENGTH_LONG).show()
+        }
+
+        testButton.setOnClickListener {
+            SlackWebHook.builder()
+                .title("수신테스트")
+                .timeStampEnabled(true)
+                .color("#FF0000")
+                .fields("발신" to "0123456789", "내용" to "수신 테스트", "수신시각" to "Fri Feb 11 06:03:52 GMT 2022")
+                .build()
+                .send(this)
+            Toast.makeText(this, "테스트 전송!", LENGTH_LONG).show()
         }
 
         val filter = IntentFilter()

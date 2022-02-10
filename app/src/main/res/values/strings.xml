@@ -2,6 +2,7 @@
     <string name="app_name">RouteSMS</string>
     <string name="api_url_string">WEBHOOK URI</string>
     <string name="sms_bind">확인</string>
+    <string name="sms_test">전송 테스트</string>
     <string name="app_warring">
         ※ 주의 필독 ※ \n\n
         이 앱은 기업에서의 공동 휴대전화로 인증번호를 받을때, 기업구성원들이 자유롭게 인증번호를 접근 가능하도록 서버로 메세지를 송신하는 앱입니다.\n\n
