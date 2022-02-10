@@ -1,6 +1,7 @@
 package com.routesms.bind
 
 import android.Manifest
+import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Bundle
@@ -11,6 +12,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.routesms.R
 import com.routesms.util.SMSReceiver
+import com.routesms.util.ServiceDaemon
 import com.routesms.util.slack.SlackWebHook
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -34,7 +36,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun regBroadcast() {
+        val filter = IntentFilter()
+        filter.addAction("BroadcastReceive")
+        registerReceiver(SMSReceiver(), filter)
+    }
+
     fun initComp() {
+        startService()
         var pref = getSharedPreferences("Application", MODE_PRIVATE)
         var editor = pref.edit()
         url = pref.getString("api_url", null)
@@ -58,10 +67,11 @@ class MainActivity : AppCompatActivity() {
                 .send(this)
             Toast.makeText(this, "테스트 전송!", LENGTH_LONG).show()
         }
+    }
 
-        val filter = IntentFilter()
-        filter.addAction("BroadcastReceive")
-        registerReceiver(SMSReceiver(), filter)
+    private fun startService() {
+        val intent: Intent = Intent(this, ServiceDaemon::class.java)
+        startService(intent)
     }
 
     override fun onRequestPermissionsResult( requestCode: Int, permissions: Array<out String>, grantResults: IntArray ) {
