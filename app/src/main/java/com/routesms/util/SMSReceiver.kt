@@ -32,19 +32,28 @@ class SMSReceiver() : BroadcastReceiver() {
             val receivedDate = Date(messages[0]!!.timestampMillis)
             Log.d(TAG, "received date: $receivedDate")
 
-            sendAPI(contents, context)
+            if (sender != null) {
+                sendAPI(sender, receivedDate.toString(), contents, context)
+            }
         }
     }
 
-    private fun sendAPI(content: String, context: Context) {
+    private fun sendAPI(sender: String, date: String, content: String, context: Context) {
         var pref = context.getSharedPreferences("Application", AppCompatActivity.MODE_PRIVATE)
         var editor = pref.edit()
         var url: String? = pref.getString("api_url", null) ?: return
 
         var client = OkHttpClient()
 
-        val body = FormBody.Builder().add("content", content).build() as RequestBody
-        val request: Request = Request.Builder().url(url).post(body).header("Authorization", "Basic s").build()
+        val body = FormBody.Builder()
+                .add("content", content)
+                .add("sender", sender)
+                .add("date", date)
+                .build() as RequestBody
+        val request: Request = Request.Builder().url(url).post(body)
+                .addHeader("Authorization", "Basic s")
+                .addHeader("Content-Type", "application/json")
+                .build()
         client.newCall(request).enqueue(object : Callback {
 
             override fun onFailure(call: Call?, e: IOException?) {
