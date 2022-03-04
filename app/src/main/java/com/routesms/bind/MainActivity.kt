@@ -27,10 +27,13 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         initComp()
 
-        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
-            ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.RECEIVE_SMS) != PackageManager.PERMISSION_GRANTED ||
+            ActivityCompat.checkSelfPermission(this, android.Manifest.permission.RECEIVE_MMS) != PackageManager.PERMISSION_GRANTED||
+            ActivityCompat.checkSelfPermission(this, android.Manifest.permission.READ_SMS) != PackageManager.PERMISSION_GRANTED) {
             var permissions = arrayOf(
-                Manifest.permission.RECEIVE_SMS
+                Manifest.permission.RECEIVE_SMS,
+                Manifest.permission.RECEIVE_MMS,
+                Manifest.permission.READ_SMS
             )
             ActivityCompat.requestPermissions(this, permissions, MY_PERMISSION_ACCESS_ALL)
         }
@@ -39,6 +42,8 @@ class MainActivity : AppCompatActivity() {
     fun regBroadcast() {
         val filter = IntentFilter()
         filter.addAction("BroadcastReceive")
+        filter.addAction("android.provider.Telephony.WAP_PUSH_RECEIVED")
+        filter.addDataType("application/vnd.wap.mms-message")
         registerReceiver(SMSReceiver(), filter)
     }
 
