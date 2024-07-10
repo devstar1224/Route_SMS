@@ -1,5 +1,6 @@
 package com.routesms.util.slack
 
+import SelfSigningHelper
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
@@ -8,6 +9,7 @@ import androidx.work.WorkerParameters
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import kotlinx.android.synthetic.main.activity_main.*
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
@@ -30,7 +32,7 @@ class SlackWebHookWorker(
         return try {
             val body = Gson().fromJson(requestBody, SlackWebHook::class.java)
             val slackWebHookResult =
-                getRetrofit().create(SlackApi::class.java).sendWebHook(path, body)
+                getRetrofit(appContext).create(SlackApi::class.java).sendWebHook(path, body)
             slackWebHookResult.execute().body()
         } catch (e: Exception) {
             ""
@@ -43,14 +45,16 @@ class SlackWebHookWorker(
         return url
     }
 
-    private fun getRetrofit(): Retrofit {
+    private fun getRetrofit(context: Context): Retrofit {
         val gson = GsonBuilder()
             .setLenient()
             .create()
+        val okHttpClient = SelfSigningHelper(context).setSSLOkHttp(OkHttpClient.Builder())
         return Retrofit.Builder()
             .baseUrl(WEB_HOOK_BASE_URL)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addConverterFactory(ScalarsConverterFactory.create())
+            .client(okHttpClient.build())
             .build()
     }
 
