@@ -91,7 +91,11 @@ class SMSReceiver() : BroadcastReceiver() {
         val number = parseNumber(id)
         val msg = parseMessage(id)
 
-        sendAPI(number.toString(), LocalDateTime.now().toString(), msg.toString(), _context)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            sendAPI(number.toString(), LocalDateTime.now().toString(), msg.toString(), _context)
+        } else {
+            sendAPI(number.toString(), Calendar.getInstance().time.toString(), msg.toString(), _context)
+        }
     }
 
     private fun parseNumber(`$id`: String): String? {
