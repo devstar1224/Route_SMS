@@ -9,6 +9,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.telephony.SmsMessage
 import android.text.TextUtils
 import android.util.Log
@@ -34,7 +35,9 @@ class SMSReceiver() : BroadcastReceiver() {
         val bundle = intent.extras
         if (intent.getAction().equals(MMS_RECEIVED)){
             try {
-                parseMMS()
+                Handler(Looper.getMainLooper()).postDelayed({
+                    parseMMS()
+                }, 1500)
             } catch (e: Exception) {
                 Log.e("error", e.toString())
             }
@@ -80,7 +83,10 @@ class SMSReceiver() : BroadcastReceiver() {
         val contentResolver: ContentResolver = _context.getContentResolver()
         val projection = arrayOf("_id")
         val uri: Uri = Uri.parse("content://mms")
-        val cursor: Cursor = contentResolver.query(uri, projection, null, null, "_id desc limit 1")!!
+        val cursor: Cursor = contentResolver.query(uri,     arrayOf("_id", "date"),
+            null,
+            null,
+            "date DESC limit 1")!!
         if (cursor.getCount() === 0) {
             cursor.close()
             return
