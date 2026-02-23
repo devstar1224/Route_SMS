@@ -1,11 +1,17 @@
-package com.routesms.util.slack
-
+package com.routesms.slack
 
 import android.content.Context
-import androidx.work.*
+import androidx.work.Constraints
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import com.routesms.util.slack.SlackWebHookWorker.Companion.BODY
+import com.routesms.data.SettingsKeys
+import com.routesms.data.settingsDataStore
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 
 data class SlackWebHook(
     var attachments: ArrayList<Attachment>? = null
@@ -34,33 +40,13 @@ data class SlackWebHook(
             private var footer: String? = null
             private var footerIcon: String? = null
 
-            fun pretext(pretext: String) = apply {
-                this.pretext = pretext
-            }
-
-            fun fallback(fallback: String) = apply {
-                this.fallback = fallback
-            }
-
-            fun title(title: String) = apply {
-                this.title = title
-            }
-
-            fun text(text: String) = apply {
-                this.text = text
-            }
-
-            fun authorName(authorName: String) = apply {
-                this.authorName = authorName
-            }
-
-            fun authorLink(authorLink: String) = apply {
-                this.authorLink = authorLink
-            }
-
-            fun authorIcon(authorIcon: String) = apply {
-                this.authorIcon = authorIcon
-            }
+            fun pretext(pretext: String) = apply { this.pretext = pretext }
+            fun fallback(fallback: String) = apply { this.fallback = fallback }
+            fun title(title: String) = apply { this.title = title }
+            fun text(text: String) = apply { this.text = text }
+            fun authorName(authorName: String) = apply { this.authorName = authorName }
+            fun authorLink(authorLink: String) = apply { this.authorLink = authorLink }
+            fun authorIcon(authorIcon: String) = apply { this.authorIcon = authorIcon }
 
             fun timeStampEnabled(isTimeStampEnable: Boolean) = apply {
                 this.isTimeStampEnable = isTimeStampEnable
@@ -70,25 +56,11 @@ data class SlackWebHook(
                 this.fields = arrayListOf(*fields)
             }
 
-            fun color(color: String) = apply {
-                this.color = color
-            }
-
-            fun imageUrl(imageUrl: String) = apply {
-                this.imageUrl = imageUrl
-            }
-
-            fun thumbUrl(thumbUrl: String) = apply {
-                this.thumbUrl = thumbUrl
-            }
-
-            fun footer(footer: String) = apply {
-                this.footer = footer
-            }
-
-            fun footerIcon(footerIcon: String) = apply {
-                this.footerIcon = footerIcon
-            }
+            fun color(color: String) = apply { this.color = color }
+            fun imageUrl(imageUrl: String) = apply { this.imageUrl = imageUrl }
+            fun thumbUrl(thumbUrl: String) = apply { this.thumbUrl = thumbUrl }
+            fun footer(footer: String) = apply { this.footer = footer }
+            fun footerIcon(footerIcon: String) = apply { this.footerIcon = footerIcon }
 
             fun build(): SlackWebHook {
                 val attachment = Attachment()
@@ -112,9 +84,7 @@ data class SlackWebHook(
                     attachment.fields.addAll(fields!!.toFieldArrayList())
                 }
 
-                return SlackWebHook(
-                    arrayListOf(attachment)
-                )
+                return SlackWebHook(arrayListOf(attachment))
             }
         }
 
@@ -126,8 +96,6 @@ data class SlackWebHook(
             return fieldArrayList
         }
     }
-
-
 }
 
 data class Attachment(
@@ -154,18 +122,26 @@ data class Field(
 )
 
 internal fun SlackWebHook.sendMessage(context: Context) {
+    val url = runBlocking {
+        context.settingsDataStore.data.first()[SettingsKeys.WEBHOOK_URL]
+    }
+    if (url.isNullOrBlank()) return
+
     val requestBodyString = Gson().toJson(this)
 
     val webHookWork = OneTimeWorkRequestBuilder<SlackWebHookWorker>()
-        .setInputData(workDataOf(BODY to requestBodyString))
-        .setConstraints(getWorkerConstraints())
+        .setInputData(
+            workDataOf(
+                SlackWebHookWorker.BODY to requestBodyString,
+                SlackWebHookWorker.URL to url
+            )
+        )
+        .setConstraints(
+            Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.CONNECTED)
+                .build()
+        )
         .build()
 
     WorkManager.getInstance(context.applicationContext).enqueue(webHookWork)
-}
-
-private fun getWorkerConstraints(): Constraints {
-    return Constraints.Builder()
-        .setRequiredNetworkType(NetworkType.CONNECTED)
-        .build()
 }

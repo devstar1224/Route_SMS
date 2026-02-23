@@ -1,4 +1,4 @@
-package com.routesms.util.slack
+package com.routesms.slack
 
 import retrofit2.Call
 import retrofit2.http.Body

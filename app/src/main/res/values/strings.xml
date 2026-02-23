@@ -1,18 +1,5 @@
 <resources>
     <string name="app_name">RouteSMS</string>
-    <string name="api_url_string">WEBHOOK URI</string>
-    <string name="sms_bind">확인</string>
-    <string name="sms_test">전송 테스트</string>
-    <string name="app_warring">
-        ※ 주의 필독 ※ \n\n
-        이 앱은 기업에서의 공동 휴대전화로 인증번호를 받을때, 기업구성원들이 자유롭게 인증번호를 접근 가능하도록 서버로 메세지를 송신하는 앱입니다.\n\n
-        따라서 이 앱을 설치후 개발자가 상단의 SLACK의 WEBHOOK URI 부분을 설정하고 확인을 진행시 이후 메세지가 수신되면 모든 메세지는 해당 WEBHOOK주소로 송신합니다.\n\n
-        혹여 본인이 제3자로부터 사용을 권유 받았을때 주의하세요. 설정할경우 개인의 사생활 및 메세지 정보가 송신될 수 있습니다.
-    </string>
-    <string name="app_info">
-        설정방법 \n\n
-        이 앱은 SLACK앱중 Incoming Webhooks기반으로 제작되었습니다. \n
-        Webhook URL을 발급 받으신후 https://hooks.slack.com/ 를 제외한 뒷부분을 입력해주세요. \n
-        e.g: services/T50EEI8EC23/BF2NFNNOI/dcoDWwijylifelj29f923Zf
-    </string>
+    <string name="foreground_notification_title">SMS 라우팅 활성화</string>
+    <string name="foreground_notification_text">메시지 수신 대기 중</string>
 </resources>
