@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.services)
     id("com.google.android.gms.oss-licenses-plugin")
 }
 
@@ -92,6 +93,10 @@ dependencies {
 
     // WorkManager
     implementation(libs.work.runtime.ktx)
+
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
 
     // AdMob
     implementation(libs.google.mobile.ads)
