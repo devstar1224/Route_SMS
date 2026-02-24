@@ -10,8 +10,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.navigation.compose.rememberNavController
+import com.routesms.navigation.RouteSmsNavHost
 import com.routesms.service.ServiceDaemon
-import com.routesms.ui.screen.MainScreen
 import com.routesms.ui.theme.RouteSmsTheme
 
 class MainActivity : ComponentActivity() {
@@ -29,7 +30,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             RouteSmsTheme {
-                MainScreen()
+                val navController = rememberNavController()
+                RouteSmsNavHost(navController = navController)
             }
         }
     }
@@ -53,6 +55,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startForegroundServiceCompat() {
+        if (ServiceDaemon.isRunning) return
+
         val intent = Intent(this, ServiceDaemon::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent)
