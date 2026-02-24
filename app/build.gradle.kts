@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("com.google.android.gms.oss-licenses-plugin")
 }
 
 android {
@@ -12,14 +13,15 @@ android {
         applicationId = "com.routesms"
         minSdk = 23
         targetSdk = 35
-        versionCode = 2
-        versionName = "2.0"
+        versionCode = 1
+        versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -38,6 +40,24 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
+    }
+}
+
+// Debug 빌드에서도 OSS 라이선스 데이터가 보이도록
+// release 태스크 출력을 debug에 복사
+afterEvaluate {
+    tasks.named("debugOssLicensesTask") {
+        dependsOn("releaseOssLicensesTask")
+        doLast {
+            val releaseDir = file("$buildDir/generated/third_party_licenses/release/res/raw")
+            val debugDir = file("$buildDir/generated/third_party_licenses/debug/res/raw")
+            if (releaseDir.exists()) {
+                releaseDir.listFiles()?.forEach { file ->
+                    file.copyTo(debugDir.resolve(file.name), overwrite = true)
+                }
+            }
+        }
     }
 }
 
@@ -72,6 +92,13 @@ dependencies {
 
     // WorkManager
     implementation(libs.work.runtime.ktx)
+
+    // AdMob
+    implementation(libs.google.mobile.ads)
+
+    // OSS Licenses
+    implementation(libs.oss.licenses)
+    implementation("androidx.appcompat:appcompat:1.7.0")
 
     // Test
     testImplementation(libs.junit)

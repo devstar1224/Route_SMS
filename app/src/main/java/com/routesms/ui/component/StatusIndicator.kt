@@ -1,5 +1,10 @@
 package com.routesms.ui.component
 
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,7 +64,7 @@ fun StatusIndicator(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 StatusRow(
-                    label = "알림 리스너 (RCS)",
+                    label = "RCS 메시지 수신",
                     isActive = isNotificationListenerEnabled
                 )
                 if (!isNotificationListenerEnabled) {
@@ -77,6 +83,23 @@ private fun StatusRow(
     isActive: Boolean,
     modifier: Modifier = Modifier
 ) {
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val pulseAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1000),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulseAlpha"
+    )
+
+    val dotColor = if (isActive) {
+        Color(0xFF4CAF50).copy(alpha = pulseAlpha)
+    } else {
+        Color(0xFFE0E0E0)
+    }
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
@@ -85,7 +108,7 @@ private fun StatusRow(
             modifier = Modifier
                 .size(10.dp)
                 .clip(CircleShape)
-                .background(if (isActive) Color(0xFF4CAF50) else Color(0xFFE0E0E0))
+                .background(dotColor)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(

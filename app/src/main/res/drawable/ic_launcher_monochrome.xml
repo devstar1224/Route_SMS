@@ -5,13 +5,13 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- 말풍선 본체 (rounded rectangle) -->
+    <!-- 말풍선 본체 -->
     <path
-        android:fillColor="#FFFFFF"
+        android:fillColor="#000000"
         android:pathData="M30,35 L78,35 Q83,35 83,40 L83,62 Q83,67 78,67 L42,67 L34,75 L36,67 L30,67 Q25,67 25,62 L25,40 Q25,35 30,35 Z" />
 
-    <!-- 라우팅 화살표 (→) -->
+    <!-- 라우팅 화살표 (안쪽 컷아웃) -->
     <path
-        android:fillColor="#0D47A1"
+        android:fillColor="#FFFFFF"
         android:pathData="M40,48 L62,48 L56,42 L59,39 L72,51 L59,63 L56,60 L62,54 L40,54 Z" />
 </vector>

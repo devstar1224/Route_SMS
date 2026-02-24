@@ -10,8 +10,13 @@ import android.telephony.SmsMessage
 import android.text.TextUtils
 import android.util.Log
 import com.routesms.data.DeduplicationCache
+import com.routesms.data.FilterRepository
 import com.routesms.data.ForwardedMessage
 import com.routesms.data.MessageLog
+import com.routesms.data.incrementDailyMessageCount
+import com.routesms.data.incrementForwardedTotalCount
+import com.routesms.data.isForwardingEnabledSync
+import com.routesms.data.settingsDataStore
 import com.routesms.slack.SlackWebHook
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -63,11 +68,32 @@ class SMSReceiver : BroadcastReceiver() {
     }
 
     private fun sendAPI(sender: String, date: String, content: String, context: Context, source: String) {
+        // 전달 비활성화 시 무시
+        if (!context.settingsDataStore.isForwardingEnabledSync()) {
+            Log.d(TAG, "Forwarding disabled, skipped $source: $sender")
+            return
+        }
+
         if (DeduplicationCache.isDuplicate(sender, content)) {
             Log.d(TAG, "Duplicate $source skipped: $sender")
             return
         }
         DeduplicationCache.register(sender, content)
+
+        // 필터 규칙 체크
+        val filters = FilterRepository.loadFiltersSync(context)
+        if (!FilterRepository.shouldForward(sender, content, filters)) {
+            Log.d(TAG, "Filtered out $source: $sender")
+            MessageLog.addMessage(
+                ForwardedMessage(
+                    source = source,
+                    sender = sender,
+                    content = content,
+                    blocked = true
+                )
+            )
+            return
+        }
 
         val color = if (source == "MMS") "#00AA00" else "#0000FF"
         SlackWebHook.builder()
@@ -85,6 +111,12 @@ class SMSReceiver : BroadcastReceiver() {
                 content = content
             )
         )
+
+        // 일일/총 전송 카운터 증가
+        CoroutineScope(Dispatchers.IO).launch {
+            context.settingsDataStore.incrementDailyMessageCount()
+            context.settingsDataStore.incrementForwardedTotalCount()
+        }
     }
 
     private fun parseSmsMessage(bundle: Bundle?): Array<SmsMessage?> {
